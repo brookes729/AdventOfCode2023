@@ -1,20 +1,4 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 part_1_max = { "red" => 12, "green" => 13, "blue" => 14}
-
 
 part_1_total = 0
 part_2_total = 0
@@ -41,7 +25,6 @@ File.foreach("../inputs/day2.txt") do |line|
     end
 
     part_2_total += part_2_potential["red"]* part_2_potential["green"]* part_2_potential["blue"]
-
 end
 
 puts part_1_total
