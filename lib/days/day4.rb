@@ -33,10 +33,7 @@ File.foreach("../inputs/day4.txt") do |line|
     part_2_outcomes[game_id] = matches.length
 end
 
-t1 = Time.now
 part_2_outcomes.each{ |card| part_2_total += play_card(part_2_outcomes, card[0], {})}
-t2 = Time.now
-puts t2-t1
 
 puts part_1_total
 puts part_2_total
