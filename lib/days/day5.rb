@@ -25,26 +25,48 @@ def follow_map(starting_point, map)
 end
 
 def follow_map_for_range(starting_ranges, map)
-    new_ranges = []
-    starting_ranges.each do |starting_range| 
-        map.each do |map_range|
-            if starting_range[0] + starting_range[1] < map_range[1] || map_range[1] + map_range[2] < starting_range[0] then
-                # mapped range is lower than start of starting range so doesn't impact 
-                next
-            elsif starting_range[0] < map_range[1] && starting_range[0] + starting_range[1] < map_range[1] + map_range[2] then
-                # mapped range is overlapping one end
-                puts "1: "+ starting_range.to_s + " - " + map_range.to_s
-            # elsif map_range[1] < starting_range[0] &&  map_range[1] + map_range[2] > starting_range[0]then
-            #     # mapped range is overlapping one end
-            #     puts "2: "+ starting_range.to_s + " - " + map_range.to_s
-            # else
-            #     # mapped range is fully overlapping 
-            #     puts "3: "+ starting_range.to_s + " - " + map_range.to_s
+    mapped_ranges = []
+
+    map.each do |a|
+        unmapped_ranges = []
+        starting_ranges.each do |x| 
+            # comparing starting range x -> y => x[0] -> x[0] + x[1] - 1
+            # to mapping ranges a -> b => a[1] -> a[1] + a[2] - 1 mapping to (x[0] + a[0] - a[1], a2)
+            if  a[1] + a[2] - 1 < x[0] || x[0] + x[1] - 1 < a[1] then
+                # a - b < x - y or x - y < a - b
+                unmapped_ranges.push(x)
+                #puts "1: "+ x.to_s + " - " + a.to_s + " => " + (mapped_ranges | starting_ranges).to_s
+            elsif a[1] < x[0] && x[0] <= a[1] + a[2] - 1 && a[1] + a[2] - 1 < x[0] + x[1] - 1 then
+                # a < x < b < y
+                mapped_ranges.push([x[0]+a[0]-a[1], a[1] + a[2] - x[0]]) # x-b mapped
+                unmapped_ranges.push([a[1] + a[2], x[1] - (a[1] + a[2] - x[0])]) # b-y unmapped
+                #puts "2: "+ x.to_s + " - " + a.to_s + " => " + (mapped_ranges | starting_ranges).to_s
+            elsif x[0] <= a[1] &&  a[1] + a[2] - 1 <= x[0] + x[1] - 1 then
+                # x < a - b < y
+                unmapped_ranges.push([x[0], a[1] - x[0]]) # x-a unmapped
+                mapped_ranges.push([a[0], a[2]]) # a-b mapped
+                unmapped_ranges.push([a[1] + a[2], x[0] + x[1] - (a[1] + a[2])]) # b-y unmapped
+                #puts "3: "+ x.to_s + " - " + a.to_s + " => " + (mapped_ranges | starting_ranges).to_s
+            elsif x[0] < a[1] && a[1] <= x[0] + x[1] - 1 &&  x[0] + x[1] - 1 < a[1] + a[2] - 1 then
+                # x < a < y < b
+                unmapped_ranges.push([x[0], a[1] - x[0]]) # x-a unmapped
+                mapped_ranges.push([a[0], x[1] + x[0] - a[1]]) # a-y mapped
+                #puts "4: "+ x.to_s + " - " + a.to_s + " => " + (mapped_ranges | starting_ranges).to_s
+            elsif a[1] <= x[0] && x[0] + x[1] - 1 <= a[1] + a[2] - 1 then
+                # a < x - y < b
+                mapped_ranges.push([x[0]+a[0]-a[1], x[1]]) # x-y mapped
+                #puts "5: "+ x.to_s + " - " + a.to_s + " => " + (mapped_ranges | starting_ranges).to_s
+            else
+                # shouldn't get hit
+                #puts "?: "+ x.to_s + " - " + a.to_s
+                unmapped_ranges.push(x)
 
             end
         end
+        starting_ranges = unmapped_ranges
     end
-    return new_ranges
+    #puts (mapped_ranges | starting_ranges).to_s
+    return (mapped_ranges | starting_ranges).select { |range| range[1] !=0  }
 end
 
 part_1_total = 0
@@ -87,5 +109,13 @@ puts location.min
 
 
 seed_ranges = seeds.each_slice(2).to_a 
-soil_ranges = follow_map_for_range(seed_ranges, seed_soil)
-puts soil_ranges.to_s
+location_ranges =  follow_map_for_range(
+    follow_map_for_range(
+        follow_map_for_range(
+            follow_map_for_range(
+                follow_map_for_range(
+                    follow_map_for_range(
+                        follow_map_for_range(seed_ranges, seed_soil), soil_fertilizer), fertilizer_water), water_light), light_temperature), temperature_humidity), humidity_location)
+#puts location_ranges.to_s
+
+puts location_ranges.map { |range| range[0] }.min
